@@ -5,7 +5,7 @@ from torch import Tensor
 import numpy as np
 
 
-def test_tensor():
+def test_broadcast():
     """
     多维矩阵相乘的条件：最后两个维度符合维度相乘的条件，且前面的维度符合 维度广播 的条件。
     维度广播的条件：对应维度相同，或者其中一个维度的值为1，或者该维度直接就不存在 如下例子所示。
@@ -67,21 +67,31 @@ def test_dim_operate():
     x = torch.randn(2, 3)
     y = torch.cat((x, x, x), 0)
     z = torch.cat((x, x, x), 1)
-    print(f"torch.cat操作，y shape{y.shape}, z shape:{z.shape}")
+    print(f"torch.cat操作，y shape:{y.shape}, z shape:{z.shape}")
 
-    a = torch.tensor(np.arange(6).reshape(2, 3))
-    b = torch.tensor(np.arange(6).reshape(2, 3))
-    c = torch.stack([a, b], dim=1)
+    a = torch.tensor(np.arange(12).reshape(2, 2, 3))
+    b = torch.tensor(np.arange(12).reshape(2, 2, 3))
+    c = torch.stack([a, b], dim=1)  # 新加一个维度，且要求被stack的张量的shape完全相同
     print(f"torch.stack操作，c shape{c.shape}")
+
+    print(a)
+    print(f"-----------------------")
     print(c)
+
+
+def test_tensor():
+    a = torch.tensor(np.arange(6).reshape(2, 3))
+    print(a.shape)
+
 
 
 
 if __name__ == '__main__':
-    # test_tensor() # 矩阵相乘
+    # test_broadcast() # 矩阵相乘
     # test_conv()  # 卷积
     # test_layer_norm() # 归一化
     # test_pool() # 池化
     # test_dim_exchange()
-    test_dim_operate()
+    # test_dim_operate()
+    test_tensor()
 

@@ -5,10 +5,22 @@
 主要是 lightgbm 的一些用法原理和优化
 
 ## CV
-pytorch官网用法，数字识别项目全流程搭建
+深度学习基础，pytorch 算子，模型搭建。CV demo。
 
 ## NLP
 api调用rnn后的各层shape；huggingface的transformer使用
 
 ## LLM
 小模型 MiniMind 模型搭建训练。
+
+
+# 笔记
+
+反向传播机制：
+https://pytorch.org/docs/stable/notes/autograd.html
+
+叶子张量
+https://pytorch.org/docs/stable/tensors.html#torch.Tensor.is_leaf
+
+反向自动微分
+https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html
