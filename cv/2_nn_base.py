@@ -3,8 +3,8 @@ import torch
 
 
 '''
-激活函数（）
-损失函数选择
+激活函数【】
+损失函数选择【分类任务-CrossEntropyLoss Focal_loss、回归任务-MSELoss】
 优化器选择
   学习率
 '''
