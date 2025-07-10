@@ -9,6 +9,7 @@ import torch.optim as optim
 from torch.cuda import device
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
+from torch.utils.data import DataLoader
 
 """
 1. 命令行解析参数
@@ -115,10 +116,10 @@ def main():
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='quickly check a single pass')
     parser.add_argument('--seed', type=int, default=3407, metavar='S',
-                        help='random seed (default: 1)')
+                        help='random seed (default: 3407)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--save-model', action='store_true', default=False,
+    parser.add_argument('--save-model', action='store_true', default=True,
                         help='For Saving the current Model')
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -126,31 +127,28 @@ def main():
     torch.manual_seed(args.seed)
 
     # step2: device设置
-    if use_cuda:
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
+    device = torch.device("cuda" if use_cuda else "cpu")
 
     train_kwargs = {'batch_size': args.batch_size}
     test_kwargs = {'batch_size': args.test_batch_size}
     if use_cuda:
         cuda_kwargs = {'num_workers': 1,
                        'pin_memory': True,
-                       'shuffle': True}
+                       'shuffle': True}  # 当使用cuda的时候，加速数据读取的参数
         train_kwargs.update(cuda_kwargs)
         test_kwargs.update(cuda_kwargs)
 
     # step3: 数据准备
     transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
+        transforms.ToTensor(),  # 将三通道的像素值 0-255 整数值转为浮点数，并除以255，得到0-1的像素值
+        transforms.Normalize((0.1307,), (0.3081,)) # 数据标准化为 正态分布，加速稳定收敛。如果是其它数据集，mean和std还需要重新计算
     ])
     dataset1 = datasets.MNIST('../data', train=True, download=True,
-                              transform=transform)
+                              transform=transform)  # 继承了torch.util.data.Dataset类。如果自定义数据集，则只需重写__getitem__()和__len__()方法。
     dataset2 = datasets.MNIST('../data', train=False,
                               transform=transform)
-    train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
-    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
+    train_loader = DataLoader(dataset1, **train_kwargs) # 通过 dataset 和 batch_size 参数初始化 dataloader，批次返回数据
+    test_loader = DataLoader(dataset2, **test_kwargs)
 
     # step4: 模型搭建
     model = Net().to(device)
@@ -160,16 +158,18 @@ def main():
     # optimizer = optim.Adam(model.parameters(), lr=args.lr)
     # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma) # decay learning rate by a factor of gamma every step_size epochs
 
-    for epoch in range(1, 10):
+    for epoch in range(1, args.epochs+1):
         train(args, model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
 
+    # 导出为 onnx 格式文件。可以 跨平台、多框架 兼容
     x = torch.rand(1, 1, 28, 28).to(device)
     torch.onnx.export(model, x, "minist.onnx")
 
+    # 保存模型 .pt 格式，方便后续在此基础上继续训练
     if args.save_model:
         torch.save(model, "mnist_cnn.pt")
 
