@@ -22,7 +22,10 @@ from torch.utils.data import DataLoader
 
 """
 QA:
-1. 该分类模型的损失函数 CrossEntropyLoss，为什么训练的时候用默认参数，测试的时候要设置 reduction='sum'
+1. 该分类模型的损失函数 CrossEntropyLoss，为什么训练的时候用默认参数mean，测试的时候要设置 reduction='sum'？
+    在训练时损失的reduction参数设置为 mean，保证不同batch_size时的反向传播的梯度尺度一致，过程不受batch_size大小影响，稳定学习率和训练过程；
+    在测试时用 sum，是为了对整个测试集的损失求和，然后计算整个测试集的平均损失，便于评估。
+2. other
 """
 
 # 模型搭建
@@ -165,7 +168,7 @@ def main():
         test(model, device, test_loader)
         scheduler.step()
 
-    # 导出为 onnx 格式文件。可以 跨平台、多框架 兼容
+    # 模型导出为 onnx 格式文件。可以 跨平台、多框架 兼容，适用于不同的业界场景。
     x = torch.rand(1, 1, 28, 28).to(device)
     torch.onnx.export(model, x, "minist.onnx")
 
