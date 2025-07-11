@@ -15,6 +15,8 @@ api调用rnn后的各层shape；huggingface的transformer使用
 
 
 # 笔记
+27-pytorch-model-save：模型存储、训练中断恢复、模型交付(onnx)
+
 
 反向传播机制：
 https://pytorch.org/docs/stable/notes/autograd.html
