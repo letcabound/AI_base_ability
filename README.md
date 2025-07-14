@@ -16,6 +16,7 @@ api调用rnn后的各层shape；huggingface的transformer使用
 
 # 笔记
 27-pytorch-model-save：模型存储、训练中断恢复、模型交付(onnx)
+fine-tune框架：unsloth、Llama Factory、PEFT 等。
 
 
 反向传播机制：
