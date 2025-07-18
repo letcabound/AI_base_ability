@@ -12,6 +12,8 @@ api调用rnn后的各层shape；huggingface的transformer使用
 
 ## LLM
 小模型 MiniMind 模型搭建训练。
+data whale社区: happy-llm: https://github.com/datawhalechina/happy-llm
+                self-llm: https://github.com/datawhalechina/self-llm 【甄嬛传风格大模型、人情事故大模型、数学大模型】
 
 
 # 笔记
