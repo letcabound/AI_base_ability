@@ -24,7 +24,7 @@ app = FastAPI()
 # 处理POST请求的端点
 @app.post("/")
 async def create_item(request: Request):
-    global model, tokenizer  # 声明全局变量以便在函数内部使用模型和分词器
+    global model, tokenizer  # 全局加载，避免频繁重载引发显存的重复申请调用
     json_post_raw = await request.json()  # 获取POST请求的JSON数据
     json_post = json.dumps(json_post_raw)  # 将JSON数据转换为字符串
     json_post_list = json.loads(json_post)  # 将字符串转换为Python对象
@@ -38,11 +38,14 @@ async def create_item(request: Request):
     # 调用模型进行对话生成
     input_ids = tokenizer.apply_chat_template(messages,tokenize=False,add_generation_prompt=True)
     model_inputs = tokenizer([input_ids], return_tensors="pt").to(model.device)
-    generated_ids = model.generate(model_inputs.input_ids,max_new_tokens=512)
-    generated_ids = [
-        output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-    ]
-    response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    with torch.inference_mode():
+        generated_ids = model.generate(model_inputs.input_ids,max_new_tokens=512)
+        generated_ids = [
+            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+        ]
+        response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
     now = datetime.datetime.now()  # 获取当前时间
     time = now.strftime("%Y-%m-%d %H:%M:%S")  # 格式化时间为字符串
     # 构建响应JSON
@@ -54,13 +57,13 @@ async def create_item(request: Request):
     # 构建日志信息
     log = "[" + time + "] " + '", prompt:"' + prompt + '", response:"' + repr(response) + '"'
     print(log)  # 打印日志
-    torch_gc()  # 执行GPU内存清理
+    # torch_gc()  # 可以定期执行GPU内存清理
     return answer  # 返回响应
 
 # 主函数入口
 if __name__ == '__main__':
     # 加载预训练的分词器和模型
-    model_name_or_path = 'local_llm_save_path'
+    model_name_or_path = r'D:\models\Qwen2.5-1.5B-Instruct'
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=False)
     model = AutoModelForCausalLM.from_pretrained(model_name_or_path, device_map=CUDA_DEVICE, torch_dtype=torch.bfloat16)
 
