@@ -1,5 +1,5 @@
 # AI_base_ability
-一些关于ML、CV、NLP的基础练习和写法
+基本功
 
 ## ML
 主要是 lightgbm 的一些用法原理和优化
