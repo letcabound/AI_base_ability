@@ -2,8 +2,12 @@
 from fastapi import FastAPI, BackgroundTasks
 import asyncio
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 app = FastAPI()
+
+# 全局线程池【异步方法调用同步api接口，需要放在线程池调用】
+pool = ThreadPoolExecutor(max_workers=5)
 
 # --- 模拟耗时异步任务 ---
 async def async_task(name: str, delay: int):

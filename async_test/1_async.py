@@ -44,10 +44,11 @@ async def gather_example():
     start = time.time()
     results = await asyncio.gather(
         task_func("G", 1),
-        task_func("H", 1)
+        task_func("H", 1),
+        return_exceptions=True
     )
     end = time.time()
-    print(f"Gather done in {end - start:.2f} s")
+    print(f"Gather done in {end - start:.2f} s") # 1
     print("Gather results:", results)
 
 async def test():
@@ -62,8 +63,8 @@ async def main():
     # await sequential()
     # await fire_and_forget()
     # await tasks_with_await()
-    # await gather_example()
-    await test()
+    await gather_example()
+    # await test()
 
 # await vs create_task vs gather
 asyncio.run(main())
